@@ -37,8 +37,8 @@ Before setting up the application, ensure you have:
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/your-org/vmware-ovf-deploy-app.git
-cd vmware-ovf-deploy-app
+git clone https://github.com/NithinNtiZ/web-app-vcenter.git
+cd web-app-vcenter
 
 ```
 
