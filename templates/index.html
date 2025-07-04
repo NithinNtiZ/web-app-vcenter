@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VM Management Dashboard</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <!-- <style>
+    :root {
+      --primary-green: #00e676;
+      --primary-blue: #00c8ff;
+      --primary-bg: #071822;
+      --secondary-bg: #0d2433;
+      --accent-yellow: #ffd600;
+      --text-light: #ffffff;
+      --text-muted: #7fa3ba;
+    }
+
+    /* Reset + Layout + Forms + Buttons */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, var(--primary-bg) 0%, #0a1f2e 50%, var(--primary-bg) 100%);
+      color: var(--text-light);
+      min-height: 100vh;
+      padding: 20px;
+    }
+    .container { max-width: 1400px; margin: 0 auto; }
+
+
+        /* ==== LOADING OVERLAY (NEW) ==== */
+    .loading-overlay{
+      position:fixed; inset:0;
+      background:rgba(7,24,34,0.88);
+      display:flex; flex-direction:column;
+      align-items:center; justify-content:center;
+      z-index:9999;
+      opacity:0; visibility:hidden;
+      transition:opacity .3s ease;
+    }
+    .loading-overlay.visible{opacity:1; visibility:visible;}
+
+    .spinner{
+      width:80px; height:80px;
+      border:8px solid var(--secondary-bg);
+      border-top-color:var(--primary-blue);
+      border-radius:50%;
+      animation:spin 1s linear infinite;
+    }
+    @keyframes spin{to{transform:rotate(360deg);}}
+
+    .loading-text{
+      margin-top:20px;
+      color:var(--primary-blue);
+      font-size:18px; font-weight:bold;
+      text-align:center;
+    }
+
+    .header {
+      background: linear-gradient(135deg, var(--secondary-bg), #1a3a4a, var(--secondary-bg));
+      border: 2px solid var(--primary-blue);
+      border-radius: 15px;
+      padding: 25px;
+      margin-bottom: 30px;
+      box-shadow: 0 10px 30px rgba(0, 200, 255, 0.2);
+      position: relative;
+      overflow: hidden;
+    }
+    .header::before {
+      content: ''; position: absolute; top: -50%; left: -50%;
+      width: 200%; height: 200%;
+      background: linear-gradient(45deg, transparent, rgba(0, 200, 255, 0.1), transparent);
+      animation: shine 3s infinite;
+    }
+    @keyframes shine {
+      0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+      100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+    }
+    .welcome-text { font-size: 28px; font-weight: bold; color: var(--primary-blue); margin-bottom: 10px; }
+    .user-email { font-size: 16px; color: var(--primary-green); margin-bottom: 15px; }
+    .logout-container { text-align: right; }
+    .logout-btn {
+      background: linear-gradient(45deg, #ff4757, #ff3742);
+      color: white; padding: 10px 20px; border-radius: 25px;
+      font-weight: bold; border: 2px solid transparent;
+      text-decoration: none;
+      transition: all 0.3s ease;
+    }
+    .logout-btn:hover {
+      background: linear-gradient(45deg, #ff3742, #ff4757);
+      border-color: var(--primary-blue);
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(255, 71, 87, 0.4);
+    }
+
+    .dashboard-title {
+      text-align: center;
+      font-size: 32px;
+      color: var(--primary-blue);
+      margin-bottom: 30px;
+      text-shadow: 0 0 20px rgba(0, 200, 255, 0.5);
+    }
+
+    /* Main Layout - Split into two columns */
+    .main-layout {
+      display: grid;
+      grid-template-columns: 1fr 350px;
+      gap: 30px;
+      align-items: start;
+    }
+
+    @media (max-width: 1024px) {
+      .main-layout {
+        grid-template-columns: 1fr;
+        gap: 20px;
+      }
+    }
+
+    .left-panel {
+      width: 100%;
+    }
+
+    .right-panel {
+      position: sticky;
+      top: 20px;
+    }
+
+    .tabs {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 30px;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .tab-button {
+      background: linear-gradient(135deg, var(--secondary-bg), #1a3a4a);
+      color: var(--text-light);
+      padding: 15px 25px;
+      border: 2px solid var(--text-muted);
+      border-radius: 12px;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: bold;
+      transition: all 0.3s ease;
+    }
+    .tab-button:hover {
+      border-color: var(--primary-blue);
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(0, 200, 255, 0.2);
+    }
+    .tab-button.active {
+      background: linear-gradient(135deg, var(--primary-blue), #0099cc);
+      color: var(--text-light);
+      border-color: var(--primary-green);
+      box-shadow: 0 5px 20px rgba(0, 200, 255, 0.3);
+    }
+
+    .tab-content {
+      display: none;
+      width: 100%;
+      background: linear-gradient(135deg, var(--secondary-bg), #1a3a4a);
+      padding: 30px;
+      border-radius: 15px;
+      border: 2px solid var(--text-muted);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    }
+    .tab-content.active {
+      display: block;
+      animation: fadeInUp 0.5s ease;
+    }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .form-title {
+      color: var(--primary-blue);
+      font-size: 24px;
+      margin-bottom: 20px;
+      text-align: center;
+      font-weight: bold;
+    }
+    .form-group { margin-bottom: 20px; }
+    label {
+      display: block;
+      margin-bottom: 8px;
+      color: var(--text-light);
+      font-weight: bold;
+    }
+    input, select {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid var(--text-muted);
+      border-radius: 8px;
+      background: var(--primary-bg);
+      color: var(--text-light);
+      transition: border-color 0.3s ease;
+    }
+    input:focus, select:focus {
+      outline: none;
+      border-color: var(--primary-blue);
+      box-shadow: 0 0 10px rgba(0, 200, 255, 0.2);
+    }
+
+    .submit-btn {
+      background: linear-gradient(135deg, var(--primary-green), #00bf63);
+      color: var(--primary-bg);
+      padding: 15px 30px;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      font-size: 18px;
+      font-weight: bold;
+      width: 100%;
+      transition: all 0.3s ease;
+    }
+    .submit-btn:hover {
+      background: linear-gradient(135deg, #00bf63, var(--primary-green));
+      transform: translateY(-2px);
+      box-shadow: 0 5px 20px rgba(0, 230, 118, 0.3);
+    }
+
+    .delete-btn {
+      background: linear-gradient(135deg, #ff6b35, #f7931e) !important;
+      color: white !important;
+    }
+    .delete-btn:hover {
+      background: linear-gradient(135deg, #f7931e, #ff6b35) !important;
+      box-shadow: 0 5px 20px rgba(255, 107, 53, 0.3) !important;
+    }
+    .lan-ip-btn {
+      background: linear-gradient(135deg, var(--primary-blue), #0099cc) !important;
+      color: white !important;
+    }
+    .lan-ip-btn:hover {
+      background: linear-gradient(135deg, #0099cc, var(--primary-blue)) !important;
+      box-shadow: 0 5px 20px rgba(0, 200, 255, 0.3) !important;
+    }
+    .mgmt-ip-btn {
+      background: linear-gradient(135deg, #9d4edd, #7209b7) !important;
+      color: white !important;
+    }
+    .mgmt-ip-btn:hover {
+      background: linear-gradient(135deg, #7209b7, #9d4edd) !important;
+      box-shadow: 0 5px 20px rgba(157, 78, 221, 0.3) !important;
+    }
+
+    /* Live Feed Styles - Redesigned for right panel */
+    .live-feed {
+      padding: 20px;
+      background: linear-gradient(135deg, var(--secondary-bg), #1a3a4a);
+      border: 2px solid var(--text-muted);
+      border-radius: 15px;
+      height: fit-content;
+      min-height: 400px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    }
+    .live-feed-title {
+      color: var(--primary-blue);
+      font-size: 18px;
+      font-weight: bold;
+      margin-bottom: 15px;
+      text-align: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .status-indicator {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--primary-green);
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0% { opacity: 1; }
+      50% { opacity: 0.5; }
+      100% { opacity: 1; }
+    }
+    .vm-list {
+      max-height: 500px;
+      overflow-y: auto;
+      border: 1px solid var(--text-muted);
+      border-radius: 8px;
+      background: var(--primary-bg);
+    }
+    .vm-item {
+      padding: 12px 15px;
+      border-bottom: 1px solid var(--text-muted);
+      transition: background 0.3s ease;
+    }
+    .vm-item:hover {
+      background: var(--secondary-bg);
+    }
+    .vm-item:last-child {
+      border-bottom: none;
+    }
+    .vm-info {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .vm-hostname {
+      color: var(--primary-blue);
+      font-weight: bold;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .vm-details {
+      color: var(--text-muted);
+      font-size: 11px;
+      line-height: 1.3;
+    }
+    .vm-status {
+      padding: 3px 8px;
+      border-radius: 12px;
+      font-size: 10px;
+      font-weight: bold;
+      text-transform: uppercase;
+    }
+    .vm-actions {
+      display: flex;
+      gap: 6px;
+      margin-top: 8px;
+      justify-content: flex-end;
+    }
+    .vm-action-btn {
+      padding: 4px 8px;
+      border: none;
+      border-radius: 6px;
+      font-size: 10px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-transform: uppercase;
+    }
+    .console-btn {
+      background: linear-gradient(135deg, var(--primary-blue), #0099cc);
+      color: white;
+    }
+    .console-btn:hover {
+      background: linear-gradient(135deg, #0099cc, var(--primary-blue));
+      transform: translateY(-1px);
+      box-shadow: 0 2px 8px rgba(0, 200, 255, 0.4);
+    }
+    .delete-action-btn {
+      background: linear-gradient(135deg, #ff6b35, #f7931e);
+      color: white;
+    }
+    .delete-action-btn:hover {
+      background: linear-gradient(135deg, #f7931e, #ff6b35);
+      transform: translateY(-1px);
+      box-shadow: 0 2px 8px rgba(255, 107, 53, 0.4);
+    }
+    .status-running {
+      background: var(--primary-green);
+      color: var(--primary-bg);
+    }
+    .status-pending {
+      background: var(--accent-yellow);
+      color: var(--primary-bg);
+    }
+    .status-stopped {
+      background: #ff4757;
+      color: white;
+    }
+    .no-vms {
+      text-align: center;
+      color: var(--text-muted);
+      padding: 30px 20px;
+      font-style: italic;
+    }
+    .refresh-btn {
+      background: linear-gradient(135deg, var(--primary-blue), #0099cc);
+      color: white;
+      padding: 6px 12px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 11px;
+      font-weight: bold;
+      margin-left: 8px;
+      transition: all 0.3s ease;
+    }
+    .refresh-btn:hover {
+      background: linear-gradient(135deg, #0099cc, var(--primary-blue));
+      transform: translateY(-1px);
+    }
+
+    .live-count {
+      background: linear-gradient(135deg, var(--primary-green), #00bf63);
+      color: var(--primary-bg);
+      padding: 8px 15px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: bold;
+      margin-bottom: 15px;
+      text-align: center;
+    }
+
+    /* Flash Messages */
+    .flash-message {
+      padding: 15px 20px;
+      margin-bottom: 20px;
+      border-radius: 8px;
+      font-weight: bold;
+      font-size: 16px;
+      border: 2px solid;
+      position: relative;
+    }
+    .flash-info { 
+      background: rgba(0, 230, 118, 0.1); 
+      color: var(--primary-green); 
+      border-color: var(--primary-green); 
+    }
+    .flash-warning { 
+      background: rgba(255, 214, 0, 0.1); 
+      color: var(--accent-yellow); 
+      border-color: var(--accent-yellow); 
+    }
+    .flash-danger { 
+      background: rgba(255, 71, 87, 0.1); 
+      color: #ff4757; 
+      border-color: #ff4757; 
+    }
+    .close-btn {
+      position: absolute;
+      right: 12px;
+      top: 8px;
+      font-size: 20px;
+      cursor: pointer;
+      color: inherit;
+      opacity: 0.7;
+      transition: opacity 0.3s ease;
+    }
+    .close-btn:hover {
+      opacity: 1;
+    }
+
+    /* Scrollbar Styling */
+    .vm-list::-webkit-scrollbar {
+      width: 6px;
+    }
+    .vm-list::-webkit-scrollbar-track {
+      background: var(--primary-bg);
+    }
+    .vm-list::-webkit-scrollbar-thumb {
+      background: var(--text-muted);
+      border-radius: 3px;
+    }
+    .vm-list::-webkit-scrollbar-thumb:hover {
+      background: var(--primary-blue);
+    }
+  </style> -->
+
+  <script>
+        /* ---------- HELPER FUNCTIONS (NEW) ---------- */
+    function showLoading(message = 'Loading…') {
+      const overlay = document.getElementById('loading-overlay');
+      overlay.querySelector('.loading-text').textContent = message;
+      overlay.classList.add('visible');
+    }
+
+    function hideLoading() {
+      document.getElementById('loading-overlay').classList.remove('visible');
+    }
+
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.tab-button').forEach(el => el.classList.remove('active'));
+      document.getElementById(tabId).classList.add('active');
+      document.getElementById(tabId + '-btn').classList.add('active');
+    }
+
+    function validateForm(formType) {
+      const form = document.querySelector(`#${formType} form`);
+      const inputs = form.querySelectorAll('input[required], select[required]');
+      let valid = true;
+      inputs.forEach(input => {
+        if (!input.value.trim()) {
+          input.style.borderColor = '#ff4757';
+          valid = false;
+        } else {
+          input.style.borderColor = 'var(--text-muted)';
+        }
+      });
+      if (!valid) alert('Please fill in all required fields');
+      return valid;
+    }
+
+    function handleCreateFormSubmit(form) {
+      if (validateForm('create')) {
+        showLoading('Creating your VM…');
+        const btn = form.querySelector('button[type="submit"]');
+        btn.textContent = 'Creating...';
+        btn.disabled = true;
+        return true;
+      }
+      return false;
+    }
+
+    function handleDeleteFormSubmit(form) {
+      if (!confirm('Are you sure you want to delete this VM?')) return false;
+      if (validateForm('delete')) {
+        const btn = form.querySelector('button[type="submit"]');
+        btn.textContent = 'Deleting...';
+        btn.disabled = true;
+        return true;
+      }
+      return false;
+    }
+
+    function handleLanIpFormSubmit(form) {
+      const btn = form.querySelector('button[type="submit"]');
+      btn.textContent = 'Getting LAN IP...';
+      btn.disabled = true;
+      return true;
+    }
+
+    function handleMgmtIpFormSubmit(form) {
+      const btn = form.querySelector('button[type="submit"]');
+      btn.textContent = 'Getting Management IP...';
+      btn.disabled = true;
+      return true;
+    }
+
+    // Live Feed Functions - Updated to show only running machines
+    async function fetchVMData() {
+      try {
+        const response = await fetch('/api/user-vms');
+        const data = await response.json();
+        // Filter to show only running/live machines
+        const runningVMs = (data.vms || []).filter(vm => vm.status === 'running');
+        updateVMList(runningVMs);
+      } catch (error) {
+        console.error('Error fetching VM data:', error);
+        document.getElementById('vm-list').innerHTML = '<div class="no-vms">Error loading VM data</div>';
+      }
+    }
+
+    function updateVMList(vms) {
+      const vmList = document.getElementById('vm-list');
+      const vmCount = document.getElementById('vm-count');
+      
+      // Update count
+      vmCount.textContent = `${vms.length} Live Machine${vms.length !== 1 ? 's' : ''}`;
+      
+      if (vms.length === 0) {
+        vmList.innerHTML = '<div class="no-vms">No running VMs found</div>';
+        return;
+      }
+
+      vmList.innerHTML = vms.map(vm => `
+        <div class="vm-item">
+          <div class="vm-info">
+            <div class="vm-hostname">
+              🖥️ ${vm.hostname || 'N/A'}
+              <div class="vm-status status-${vm.status || 'running'}">
+                ${vm.status || 'running'}
+              </div>
+            </div>
+            <div class="vm-details">
+              📋 ${vm.version || 'N/A'} • ${vm.hardware || 'N/A'} • ${vm.ip || 'N/A'}
+            </div>
+            <div class="vm-details">
+              📅 ${vm.created_at ? new Date(vm.created_at).toLocaleDateString('en-IN') : 'N/A'}
+            </div>
+            <div class="vm-details">
+              ⏳ ${vm.end_time || 'N/A'}
+            </div>
+            ${vm.message ? `<div class="vm-details">💬 ${vm.message}</div>` : ''}
+            <div class="vm-actions">
+              <button class="vm-action-btn console-btn" onclick="openConsole('${vm.hostname || ''}')">
+                🖥️ Console
+              </button>
+              <button class="vm-action-btn extend-btn" onclick="extendLease('${vm.hostname || ''}')">
+                ⏰ Extend Lease
+              </button>
+              <button class="vm-action-btn delete-action-btn" onclick="deleteVM('${vm.hostname || ''}')">
+                🗑️ Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function openConsole(hostname) {
+      if (!hostname) {
+        alert('VM hostname not available');
+        return;
+      }
+      
+      // You can customize this URL based on your console endpoint
+      const consoleUrl = `/console/${hostname}`;
+      
+      // Open console in a new window/tab
+      window.open(consoleUrl, '_blank', 'width=1024,height=768,scrollbars=yes,resizable=yes');
+    }
+
+    function deleteVM(hostname) {
+      if (!hostname) {
+        alert('VM hostname not available');
+        return;
+      }
+      
+      if (!confirm(`Are you sure you want to delete VM: ${hostname}?`)) {
+        return;
+      }
+      
+      // Show loading state
+      const deleteBtn = event.target;
+      const originalText = deleteBtn.innerHTML;
+      deleteBtn.innerHTML = '⏳ Deleting...';
+      deleteBtn.disabled = true;
+      
+      // Make delete request
+      fetch('/delete', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: `hostname=${encodeURIComponent(hostname)}`
+      })
+      .then(response => {
+        if (response.ok) {
+          // Refresh the VM list after successful deletion
+          fetchVMData();
+          alert(`VM ${hostname} deleted successfully`);
+        } else {
+          throw new Error('Delete failed');
+        }
+      })
+      .catch(error => {
+        console.error('Error deleting VM:', error);
+        alert(`Failed to delete VM: ${hostname}`);
+      })
+      .finally(() => {
+        // Restore button state
+        deleteBtn.innerHTML = originalText;
+        deleteBtn.disabled = false;
+      });
+    }
+
+    function extendLease(hostname) {
+      if (!hostname) {
+        alert('VM hostname not available');
+        return;
+      }
+      
+      if (!confirm(`Are you sure you want to extend the lease for VM: ${hostname}?`)) {
+        return;
+      }
+      
+      // Show loading state
+      const extendBtn = event.target;
+      const originalText = extendBtn.innerHTML;
+      extendBtn.innerHTML = '⏳ Extending...';
+      extendBtn.disabled = true;
+      
+      // Make extend lease request
+      fetch('/extend', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: `hostname=${encodeURIComponent(hostname)}`
+      })
+      .then(response => {
+        if (response.ok) {
+          // Refresh the VM list after successful lease extension
+          fetchVMData();
+          alert(`Lease for VM ${hostname} extended successfully`);
+        } else {
+          throw new Error('Lease extension failed');
+        }
+      })
+      .catch(error => {
+        console.error('Error extending lease for VM:', error);
+        alert(`Failed to extend lease for VM: ${hostname}`);
+      })
+      .finally(() => {
+        // Restore button state
+        extendBtn.innerHTML = originalText;
+        extendBtn.disabled = false;
+      });
+    }
+
+
+
+
+
+    function refreshVMFeed() {
+      const refreshBtn = document.querySelector('.refresh-btn');
+      refreshBtn.textContent = '🔄';
+      refreshBtn.disabled = true;
+      
+      fetchVMData().finally(() => {
+        setTimeout(() => {
+          refreshBtn.textContent = '🔄 Refresh';
+          refreshBtn.disabled = false;
+        }, 1000);
+      });
+    }
+
+    // Auto-refresh every 30 seconds
+    let refreshInterval;
+    function startAutoRefresh() {
+      refreshInterval = setInterval(fetchVMData, 30000);
+    }
+
+    function stopAutoRefresh() {
+      if (refreshInterval) {
+        clearInterval(refreshInterval);
+      }
+    }
+
+    window.onload = () => {
+      switchTab('create');
+      fetchVMData(); // Initial load
+      startAutoRefresh(); // Start auto-refresh
+    };
+
+    window.addEventListener('DOMContentLoaded', () => {
+      setTimeout(() => {
+        document.querySelectorAll('.flash-message').forEach(el => {
+          el.style.transition = "opacity 0.6s ease";
+          el.style.opacity = "0";
+          setTimeout(() => el.remove(), 600);
+        });
+      }, 5000);
+    });
+  </script>
+
+
+</head>
+<body>
+  <div id="loading-overlay" class="loading-overlay">
+    <div class="spinner"></div>
+    <div class="loading-text">Creating your VM…</div>
+  </div>
+  <div class="container">
+    <!-- Header -->
+    <div class="header">
+      <div class="user-info">
+        <div class="welcome-text">Welcome, {{ user['name'] }}</div>
+        <div class="user-email">📧 {{ user['preferred_username'] }}</div>
+        <div class="logout-container">
+          <a href="{{ url_for('logout') }}" class="logout-btn">🚪 Logout</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Title -->
+    <h1 class="dashboard-title">🖥️ VM Management Dashboard</h1>
+
+    <!-- Flash Messages -->
+    <div id="flash-messages">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+            <div class="flash-message flash-{{ category }}">
+              {{ message }}
+              <span class="close-btn" onclick="this.parentElement.style.display='none';">&times;</span>
+            </div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+    </div>
+
+    <!-- Main Layout with Two Columns -->
+    <div class="main-layout">
+      <!-- Left Panel: Forms -->
+      <div class="left-panel">
+        <!-- Tabs -->
+        <div class="tabs">
+          <button class="tab-button" id="create-btn" onclick="switchTab('create')">➕ Create VM</button>
+          <button class="tab-button" id="delete-btn" onclick="switchTab('delete')">🗑️ Delete VM</button>
+          <button class="tab-button" id="lan-ip-btn" onclick="switchTab('lan-ip')">🌐 LAN IP</button>
+          <button class="tab-button" id="mgmt-ip-btn" onclick="switchTab('mgmt-ip')">⚙️ Management IP</button>
+        </div>
+
+        <!-- Create VM Tab -->
+        <div class="tab-content" id="create">
+          <h2 class="form-title">🆕 Create New Virtual Machine</h2>
+          <form method="POST" action="/create" onsubmit="return handleCreateFormSubmit(this)">
+            <div class="form-group">
+              <label for="version">NIOS Version <span class="required">*</span></label>
+              <select id="version" name="version" required>
+                <option value="" disabled selected>🔽 Select NIOS version</option>
+                <option value="9.0.0">9.0.0</option>
+                <option value="9.0.1">9.0.1</option>
+                <option value="9.0.2">9.0.2</option>
+                <option value="9.0.3">9.0.3</option>
+                <option value="9.0.4">9.0.4</option>
+                <option value="9.0.5">9.0.5</option>
+                <option value="9.0.6">9.0.6</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="hardware">Hardware Model <span class="required">*</span></label>
+              <select id="hardware" name="hardware" required>
+                <option value="" disabled selected>🔽 Select hardware model</option>
+                <option value="805">805</option>
+                <option value="815">815</option>
+                <option value="825">825</option>
+                <option value="1405">1405</option>
+                <option value="1415">1415</option>
+                <option value="1425">1425</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="count">Machine Count <span class="required">*</span></label>
+              <input type="number" id="count" name="count" min="1" max="3" required />
+            </div>
+            <div class="form-group">
+              <label for="message">Purpose/Message <span class="required">*</span></label>
+              <input type="text" id="message" name="message" required />
+            </div>
+            <button type="submit" class="submit-btn">🚀 Create Virtual Machine</button>
+          </form>
+        </div>
+
+        <!-- Delete VM Tab -->
+        <div class="tab-content" id="delete">
+          <h2 class="form-title">🗑️ Delete Virtual Machine</h2>
+          <form method="POST" action="/delete" onsubmit="return handleDeleteFormSubmit(this)">
+            <div class="form-group">
+              <label for="hostname">VM Hostname <span class="required">*</span></label>
+              <input type="text" id="hostname" name="hostname" required />
+            </div>
+            <button type="submit" class="submit-btn delete-btn">🗑️ Delete Virtual Machine</button>
+          </form>
+        </div>
+
+        <!-- LAN IP Tab -->
+        <div class="tab-content" id="lan-ip">
+          <h2 class="form-title">🌐 Get LAN IP</h2>
+          <form method="GET" action="/api/lan-ip" onsubmit="return handleLanIpFormSubmit(this)">
+            <button type="submit" class="submit-btn lan-ip-btn">🔍 Get IP</button>
+          </form>
+        </div>
+
+        <!-- Management IP Tab -->
+        <div class="tab-content" id="mgmt-ip">
+          <h2 class="form-title">⚙️ Get Management IP</h2>
+          <form method="GET" action="/api/mgmt-ip" onsubmit="return handleMgmtIpFormSubmit(this)">
+            <button type="submit" class="submit-btn mgmt-ip-btn">🔍 Get IP</button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Right Panel: Live Feed -->
+      <div class="right-panel">
+        <div class="live-feed">
+          <div class="live-feed-title">
+            <div class="status-indicator"></div>
+            🟢 Live Machines
+            <button class="refresh-btn" onclick="refreshVMFeed()">🔄 Refresh</button>
+          </div>
+          <div class="live-count" id="vm-count">0 Live Machines</div>
+          <div class="vm-list" id="vm-list">
+            <div class="no-vms">Loading VM data...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

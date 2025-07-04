@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>GetNIOS Command Summary</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600&display=swap');
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
+      color: #fff;
+      min-height: 100vh;
+      padding: 20px;
+      position: relative;
+      overflow-x: hidden;
+    }
+    
+    /* Animated background particles */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-image: 
+        radial-gradient(2px 2px at 20px 30px, #00ff88, transparent),
+        radial-gradient(2px 2px at 40px 70px, #00ccff, transparent),
+        radial-gradient(1px 1px at 90px 40px, #ffff00, transparent),
+        radial-gradient(1px 1px at 130px 80px, #00ff88, transparent);
+      background-repeat: repeat;
+      background-size: 200px 200px;
+      animation: float 20s linear infinite;
+      opacity: 0.1;
+      z-index: -1;
+    }
+    
+    @keyframes float {
+      0% { transform: translate(0, 0); }
+      100% { transform: translate(-200px, -200px); }
+    }
+    
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      position: relative;
+      z-index: 1;
+    }
+    
+    .box {
+      background: rgba(17, 17, 17, 0.95);
+      backdrop-filter: blur(10px);
+      padding: 40px;
+      border-radius: 16px;
+      border: 1px solid rgba(0, 255, 136, 0.2);
+      box-shadow: 
+        0 8px 32px rgba(0, 0, 0, 0.6),
+        0 0 40px rgba(0, 255, 136, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+      animation: slideUp 0.8s ease-out;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .box::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, #00ff88, transparent);
+      animation: scan 3s ease-in-out infinite;
+    }
+    
+    @keyframes slideUp {
+      0% {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    @keyframes scan {
+      0%, 100% {
+        left: -100%;
+      }
+      50% {
+        left: 100%;
+      }
+    }
+    
+    .user {
+      text-align: center;
+      margin-bottom: 30px;
+      padding: 20px;
+      background: linear-gradient(135deg, rgba(0, 204, 255, 0.1), rgba(0, 255, 136, 0.1));
+      border-radius: 12px;
+      border: 1px solid rgba(0, 204, 255, 0.3);
+      color: #00ccff;
+      font-weight: 500;
+      animation: glow 2s ease-in-out infinite alternate;
+    }
+    
+    @keyframes glow {
+      0% {
+        box-shadow: 0 0 5px rgba(0, 204, 255, 0.3);
+      }
+      100% {
+        box-shadow: 0 0 20px rgba(0, 204, 255, 0.5);
+      }
+    }
+    
+    h2 {
+      color: #00ff88;
+      text-align: center;
+      font-size: 2em;
+      font-weight: 600;
+      margin-bottom: 30px;
+      text-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+      position: relative;
+    }
+    
+    h2::after {
+      content: '';
+      position: absolute;
+      bottom: -10px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 60px;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, #00ff88, transparent);
+    }
+    
+    .config-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+    
+    .config-item {
+      background: rgba(0, 0, 0, 0.3);
+      padding: 20px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 0, 0.3);
+      transition: all 0.3s ease;
+    }
+    
+    .config-item:hover {
+      transform: translateY(-5px);
+      border-color: rgba(255, 255, 0, 0.6);
+      box-shadow: 0 10px 25px rgba(255, 255, 0, 0.2);
+    }
+    
+    .config-label {
+      color: #ffff00;
+      font-size: 0.9em;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 8px;
+    }
+    
+    .config-value {
+      color: #ffffff;
+      font-size: 1.1em;
+      font-weight: 500;
+      word-break: break-word;
+    }
+    
+    .cmd {
+      background: rgba(0, 0, 0, 0.6);
+      color: #00ccff;
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 500;
+      font-size: 1.1em;
+      padding: 25px;
+      border-radius: 12px;
+      border: 2px solid rgba(0, 204, 255, 0.4);
+      margin: 30px 0;
+      word-break: break-all;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+    
+    .cmd:hover {
+      border-color: rgba(0, 204, 255, 0.8);
+      box-shadow: 0 0 30px rgba(0, 204, 255, 0.3);
+    }
+    
+    .cmd::before {
+      content: '$ ';
+      color: #00ff88;
+      font-weight: 700;
+    }
+    
+    .cmd::after {
+      content: 'Click to copy';
+      position: absolute;
+      top: 10px;
+      right: 15px;
+      font-size: 0.8em;
+      color: rgba(255, 255, 255, 0.5);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    
+    .cmd:hover::after {
+      opacity: 1;
+    }
+    
+    hr {
+      margin: 40px 0;
+      border: none;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(0, 255, 136, 0.5), transparent);
+      position: relative;
+    }
+    
+    hr::after {
+      content: '◆';
+      position: absolute;
+      top: -8px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #111;
+      color: #00ff88;
+      padding: 0 10px;
+      font-size: 1.2em;
+    }
+    
+    .vm-section h2 {
+      color: #00ff88;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+    
+    .vm-list {
+      list-style: none;
+      display: grid;
+      gap: 25px;
+    }
+    
+    .vm-item {
+      background: linear-gradient(135deg, rgba(0, 204, 255, 0.1), rgba(0, 255, 136, 0.05));
+      padding: 25px;
+      border-radius: 12px;
+      border: 1px solid rgba(0, 204, 255, 0.3);
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .vm-item::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 4px;
+      height: 100%;
+      background: linear-gradient(180deg, #00ff88, #00ccff);
+    }
+    
+    .vm-item:hover {
+      transform: translateX(10px);
+      border-color: rgba(0, 204, 255, 0.6);
+      box-shadow: 0 10px 30px rgba(0, 204, 255, 0.2);
+    }
+    
+    .vm-detail {
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .vm-label {
+      color: #ffff00;
+      font-weight: 600;
+      font-size: 0.9em;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      min-width: 80px;
+    }
+    
+    .vm-value {
+      color: #ffffff;
+      font-weight: 500;
+      flex: 1;
+    }
+    
+    .vm-link {
+      color: #00ccff;
+      text-decoration: none;
+      padding: 8px 16px;
+      background: rgba(0, 204, 255, 0.1);
+      border-radius: 6px;
+      border: 1px solid rgba(0, 204, 255, 0.3);
+      transition: all 0.3s ease;
+      display: inline-block;
+      font-weight: 500;
+    }
+    
+    .vm-link:hover {
+      background: rgba(0, 204, 255, 0.2);
+      border-color: rgba(0, 204, 255, 0.6);
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(0, 204, 255, 0.3);
+    }
+    
+    .no-vms {
+      text-align: center;
+      color: #ff4444;
+      font-size: 1.2em;
+      font-weight: 500;
+      padding: 40px;
+      background: rgba(255, 68, 68, 0.1);
+      border: 1px solid rgba(255, 68, 68, 0.3);
+      border-radius: 12px;
+      animation: pulse 2s ease-in-out infinite;
+    }
+    
+    @keyframes pulse {
+      0%, 100% {
+        opacity: 1;
+      }
+      50% {
+        opacity: 0.7;
+      }
+    }
+    
+    .vm-divider {
+      border: none;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+      margin: 20px 0 0 0;
+    }
+    
+    .home-button {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      background: linear-gradient(135deg, rgba(0, 255, 136, 0.2), rgba(0, 204, 255, 0.2));
+      border: 1px solid rgba(0, 255, 136, 0.4);
+      color: #00ff88;
+      padding: 12px 20px;
+      border-radius: 25px;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 0.9em;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(10px);
+      z-index: 1000;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .home-button:hover {
+      transform: translateY(-2px);
+      border-color: rgba(0, 255, 136, 0.8);
+      box-shadow: 0 8px 25px rgba(0, 255, 136, 0.3);
+      background: linear-gradient(135deg, rgba(0, 255, 136, 0.3), rgba(0, 204, 255, 0.3));
+    }
+    
+    .home-button::before {
+      content: '🏠';
+      font-size: 1.1em;
+    }
+    
+    /* Responsive design */
+    @media (max-width: 768px) {
+      body {
+        padding: 10px;
+      }
+      
+      .home-button {
+        top: 10px;
+        left: 10px;
+        padding: 10px 16px;
+        font-size: 0.8em;
+      }
+      
+      .box {
+        padding: 25px;
+      }
+      
+      .config-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      h2 {
+        font-size: 1.5em;
+      }
+      
+      .cmd {
+        font-size: 0.9em;
+        padding: 20px;
+      }
+    }
+  </style>
+  <script>
+    // Add copy to clipboard functionality
+    document.addEventListener('DOMContentLoaded', function() {
+      const cmdElement = document.querySelector('.cmd');
+      if (cmdElement) {
+        cmdElement.addEventListener('click', function() {
+          const text = this.textContent.replace('$ ', '').replace('Click to copy', '').trim();
+          navigator.clipboard.writeText(text).then(function() {
+            // Visual feedback
+            cmdElement.style.background = 'rgba(0, 255, 136, 0.2)';
+            setTimeout(() => {
+              cmdElement.style.background = 'rgba(0, 0, 0, 0.6)';
+            }, 300);
+          });
+        });
+      }
+    });
+  </script>
+</head>
+<body>
+  <a href="/" class="home-button">Home</a>
+  <div class="container">
+    <div class="box">
+      <div class="user">
+        <div><strong>Submitted by:</strong> {{ username }}</div>
+        <div><strong>Email:</strong> {{ email }}</div>
+      </div>
+
+      <h2>Machine Configuration Submitted</h2>
+      
+      <div class="config-grid">
+        <div class="config-item">
+          <div class="config-label">NIOS Version</div>
+          <div class="config-value">{{ version }}</div>
+        </div>
+        <div class="config-item">
+          <div class="config-label">Hardware Model</div>
+          <div class="config-value">{{ hardware }}</div>
+        </div>
+        <div class="config-item">
+          <div class="config-label">Machine Count</div>
+          <div class="config-value">{{ count }}</div>
+        </div>
+        <div class="config-item" style="grid-column: 1 / -1;">
+          <div class="config-label">Message</div>
+          <div class="config-value">{{ message }}</div>
+        </div>
+      </div>
+
+      <div class="cmd">getnios -v {{ version }} -hw {{ hardware }} -c {{ count }} -m {{ message }}</div>
+
+      <hr>
+
+      <div class="vm-section">
+        <h2>🚀 VM Deployment Info</h2>
+        {% if vm_list %}
+          <ul class="vm-list">
+            {% for vm in vm_list %}
+              <li class="vm-item">
+                <div class="vm-detail">
+                  <span class="vm-label">VM Name:</span>
+                  <span class="vm-value">{{ vm["hostname"] }}</span>
+                </div>
+                <div class="vm-detail">
+                  <span class="vm-label">URL:</span>
+                  <a href="https://{{ vm["hostname"] }}" target="_blank" class="vm-link">https://{{ vm["hostname"] }}</a>
+                </div>
+                <div class="vm-detail">
+                  <span class="vm-label">IP:</span>
+                  <span class="vm-value">{{ vm["ip"] }}</span>
+                </div>
+                {% if not loop.last %}
+                  <hr class="vm-divider">
+                {% endif %}
+              </li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <div class="no-vms">⚠️ No VMs were created.</div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</body>
+</html>

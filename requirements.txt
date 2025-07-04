@@ -1,0 +1,6 @@
+Flask
+msal
+requests
+mysql-connector-python
+python-dotenv
+gunicorn

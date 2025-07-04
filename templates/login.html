@@ -1,0 +1,92 @@
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Login</title>
+  <style>
+    :root {
+      --primary-green: #00e676;
+      --primary-blue: #00c8ff;
+      --primary-bg: #071822;
+      --secondary-bg: #0d2433;
+      --accent-yellow: #ffd600;
+      --text-light: #ffffff;
+      --text-muted: #7fa3ba;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: var(--primary-bg);
+      color: var(--text-light);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .login-container {
+      background: var(--secondary-bg);
+      border-radius: 16px;
+      padding: 40px;
+      max-width: 400px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 0 20px rgba(0, 200, 255, 0.2);
+      border: 2px solid var(--primary-blue);
+    }
+
+    .login-title {
+      font-size: 28px;
+      margin-bottom: 20px;
+      color: var(--primary-green);
+      letter-spacing: 1px;
+    }
+
+    .login-subtitle {
+      font-size: 14px;
+      margin-bottom: 30px;
+      color: var(--text-muted);
+    }
+
+    .login-btn {
+      background: linear-gradient(135deg, var(--primary-green), var(--primary-blue));
+      color: var(--text-light);
+      padding: 14px 24px;
+      font-size: 16px;
+      border: none;
+      border-radius: 30px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: all 0.3s ease;
+      text-decoration: none;
+      display: inline-block;
+    }
+
+    .login-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 16px rgba(0, 200, 255, 0.4);
+    }
+
+    .footer-note {
+      margin-top: 20px;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+  </style>
+</head>
+<body>
+  <div class="login-container">
+    <h2 class="login-title">VM Dashboard Login</h2>
+    <p class="login-subtitle">Sign in securely with your OKTA credentials</p>
+    <a href="{{ url_for('login') }}" class="login-btn">🔐 Login with OKTA</a>
+    <p class="footer-note">Access restricted to authorized users only</p>
+  </div>
+</body>
+</html>

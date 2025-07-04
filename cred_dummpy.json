@@ -1,0 +1,16 @@
+{
+  "vc": "suptrvvc01.lab.local",
+  "domain": "india.lab.local",
+  "donald": "ns1.lab.local",
+  "popepy": "admin",
+  "jerry": "123456",
+  "thanos": "10.192.50.0/23",
+  "mgmt": "10.192.61.0/24",
+  "folder": "lab-folder-loto",
+  "username": "svc.loto@lab.local",
+  "password": "123456",
+  "res_pool_list" : ["resgroup-1031", "resgroup-1032", "resgroup-1033"],
+  "ds" : "datastore-1013",
+  "network": "network-1028",
+  "sql_database": "Loto"
+}
