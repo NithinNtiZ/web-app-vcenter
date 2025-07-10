@@ -1,0 +1,85 @@
+pipeline {
+    agent any
+
+    environment {
+        registryUrl  = "homelab.azurecr.io"
+        IMAGE_NAME   = "web-app"
+    }
+
+    stages {
+
+        stage('Git checkout') {
+            steps {
+                checkout([$class: 'GitSCM',
+                    branches: [[name: '*/main']],
+                    userRemoteConfigs: [[
+                        url: 'https://dev.azure.com/homelab/web_app/_git/suplab_web_app_loto',
+                        credentialsId: 'b513d877-35f3-4d6b-a6c7-102f3607c671'
+                    ]]
+                ])
+            }
+        }
+
+        stage('Gitleaks Scan') {
+            steps {
+                echo "Running Gitleaks secret scan..."
+                sh '''
+                    gitleaks detect --no-banner --source . --report-path gitleaks-report.json || echo "Gitleaks found issues but continuing..."
+                '''
+            }
+            post {
+                always {
+                    archiveArtifacts artifacts: 'gitleaks-report.json', allowEmptyArchive: true
+                }
+            }
+        }
+
+        stage('Build image') {
+            steps {
+                script {
+                    env.IMAGE_TAG = env.BUILD_NUMBER
+                    env.IMAGE_FULL_NAME = "${registryUrl}/${IMAGE_NAME}:${env.IMAGE_TAG}"
+                    echo "Building image: ${env.IMAGE_FULL_NAME}"
+                    sh """
+                        docker build -t ${env.IMAGE_FULL_NAME} .
+                    """
+                }
+            }
+        }
+
+        stage('Trivy Image Scan') {
+            steps {
+                echo "Running Trivy vulnerability scan on image..."
+                sh '''
+                    trivy image --exit-code 1 --no-progress --format table ${registryUrl}/${IMAGE_NAME}:${BUILD_NUMBER} || true
+                '''
+            }
+        }
+
+        stage('Login & push') {
+            steps {
+                script {
+                    def imageTag = env.IMAGE_TAG
+                    def imageFullName = "${registryUrl}/${IMAGE_NAME}:${imageTag}"
+                    def latestTag = "${registryUrl}/${IMAGE_NAME}:latest"
+
+                    withCredentials([usernamePassword(
+                        credentialsId: 'acr',
+                        usernameVariable: 'ACR_USER',
+                        passwordVariable: 'ACR_PASS'
+                    )]) {
+                        echo "Logging into ACR..."
+                        sh "echo \$ACR_PASS | docker login ${registryUrl} -u \$ACR_USER --password-stdin"
+
+                        echo "Pushing image: ${imageFullName}"
+                        sh "docker push ${imageFullName}"
+
+                        echo "Tagging image as latest"
+                        sh "docker tag ${imageFullName} ${latestTag}"
+                        sh "docker push ${latestTag}"
+                    }
+                }
+            }
+        }
+    }
+}
